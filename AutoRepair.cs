@@ -5,15 +5,16 @@ using EFT;
 using EFT.InventoryLogic;
 using UnityEngine;
 
-namespace EquipmentsAR {
+namespace EquimentsAR {
    [BepInPlugin("com.luckyyy.EquipmentsAutoRepair", "In-Raid Equipments Auto Repair(EAR)", "1.0.0")]
    public class Plugin : BaseUnityPlugin {
-      // Config Entry
+      
+      // Config Entries
       public static ConfigEntry<bool> ModEnabled;
       public static ConfigEntry<float> RepairInterval;
       public static ConfigEntry<float> RepairAmount;
 
-      // Static helper
+      // Static Helper
       public static GameWorld EARGameWorld => Singleton<GameWorld>.Instantiated ? Singleton<GameWorld>.Instance : null;
       public static Player EARPlayer => EARGameWorld?.MainPlayer;
 
@@ -30,31 +31,45 @@ namespace EquipmentsAR {
             new ConfigDescription("How much EAR repair durability each tick of Repair Interval.",
             new AcceptableValueRange<float>(0.1f, 10.0f)));
 
-         Logger.LogInfo("Equipments Auto Repair(EAR) Client Loaded!");
+         // 1. Log when the mod is successfully loaded by BepInEx
+         Logger.LogInfo($"[EAR] Equipments Auto Repair Client Loaded! Mod Enabled: {ModEnabled.Value}");
       }
 
       private void Update() {
-         if (!ModEnabled.Value) return;
+         if(!ModEnabled.Value) return;
 
-         if (!EARGameWorld || EARPlayer == null) return;
+         if(!EARGameWorld || EARPlayer == null) return;
 
          _timer += Time.deltaTime;
 
-         if (_timer >= RepairInterval.Value) {
+         if(_timer >= RepairInterval.Value) {
+            Logger.LogInfo($"[EAR] Repair timer trigggered ({RepairInterval.Value}s). Checking gear...");
+
             RepairPlayerGear(EARPlayer);
             _timer = 0.0f;
          }
       }
 
       private void RepairPlayerGear(Player player) {
+         bool repairedAnything = false;
+
          foreach (var item in player.Inventory.Equipment.GetAllItems()) {
             var repairable = item.GetItemComponent<RepairableComponent>();
 
             if (repairable != null && repairable.Durability < repairable.MaxDurability) {
-               repairable.Durability = 
-                  Mathf.Min(repairable.Durability + RepairAmount.Value,
+               float oldDurability = repairable.Durability;
+
+               repairable.Durability = Mathf.Min(
+                  repairable.Durability + RepairAmount.Value,
                   repairable.MaxDurability);
+
+               Logger.LogInfo($"[EAR] Repaired item {item.Id} from {oldDurability} to {repairable.Durability}");
+               repairedAnything = true;
             }
+         }
+
+         if(repairedAnything) {
+            Logger.LogInfo("[EAR] Repair cycle complete.");
          }
       }
    }
