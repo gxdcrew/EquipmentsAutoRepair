@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="EquipmentsAutoRepair.csproj" Id="18a34205-4c93-4f6b-bcc2-42649a675a5b">
+    <Platform Solution="Release|*" Project="x64" />
+  </Project>
+</Solution>
