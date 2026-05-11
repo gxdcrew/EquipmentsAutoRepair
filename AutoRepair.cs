@@ -3,14 +3,17 @@ using BepInEx.Configuration;
 using Comfort.Common;
 using EFT;
 using EFT.InventoryLogic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace EquimentsAR {
-   [BepInPlugin("com.luckyyy.EquipmentsAutoRepair", "In-Raid Equipments Auto Repair(EAR)", "1.0.0")]
+   [BepInPlugin("com.luckyyy.EquipmentsAutoRepair", "In-Raid Equipments Auto Repair(EAR)", "1.1.0")]
    public class Plugin : BaseUnityPlugin {
-      
+
       // Config Entries
       public static ConfigEntry<bool> ModEnabled;
+      public static ConfigEntry<bool> RepairWeapon;
+      public static ConfigEntry<bool> RepairArmor;
       public static ConfigEntry<float> RepairInterval;
       public static ConfigEntry<float> RepairAmount;
 
@@ -36,13 +39,13 @@ namespace EquimentsAR {
       }
 
       private void Update() {
-         if(!ModEnabled.Value) return;
+         if (!ModEnabled.Value) return;
 
-         if(!EARGameWorld || EARPlayer == null) return;
+         if (!EARGameWorld || EARPlayer == null) return;
 
          _timer += Time.deltaTime;
 
-         if(_timer >= RepairInterval.Value) {
+         if (_timer >= RepairInterval.Value) {
             Logger.LogInfo($"[EAR] Repair timer trigggered ({RepairInterval.Value}s). Checking gear...");
 
             RepairPlayerGear(EARPlayer);
@@ -52,23 +55,44 @@ namespace EquimentsAR {
 
       private void RepairPlayerGear(Player player) {
          bool repairedAnything = false;
+         var equipment = player.Inventory.Equipment;
 
-         foreach (var item in player.Inventory.Equipment.GetAllItems()) {
-            var repairable = item.GetItemComponent<RepairableComponent>();
+         List<EquipmentSlot> slotsToRepair = new List<EquipmentSlot>();
 
-            if (repairable != null && repairable.Durability < repairable.MaxDurability) {
-               float oldDurability = repairable.Durability;
+         if (RepairWeapon.Value) {
+            slotsToRepair.Add(EquipmentSlot.FirstPrimaryWeapon);
+            slotsToRepair.Add(EquipmentSlot.SecondPrimaryWeapon);
+            slotsToRepair.Add(EquipmentSlot.Holster);
+         }
 
-               repairable.Durability = Mathf.Min(
-                  repairable.Durability + RepairAmount.Value,
-                  repairable.MaxDurability);
+         if (RepairArmor.Value) {
+            slotsToRepair.Add(EquipmentSlot.ArmorVest);
+            slotsToRepair.Add(EquipmentSlot.TacticalVest);
+            slotsToRepair.Add(EquipmentSlot.Headwear);
+            slotsToRepair.Add(EquipmentSlot.FaceCover);
+            slotsToRepair.Add(EquipmentSlot.Eyewear);
+            slotsToRepair.Add(EquipmentSlot.Earpiece);
+         }
 
-               Logger.LogInfo($"[EAR] Repaired item {item.Id} from {oldDurability} to {repairable.Durability}");
-               repairedAnything = true;
+         foreach (var slot in slotsToRepair) {
+            var slotItem = equipment.GetSlot(slot).ContainedItem;
+
+            if (slotItem == null) continue;
+
+            foreach (var item in slotItem.GetAllItems()) {
+               var repairable = item.GetItemComponent<RepairableComponent>();
+
+               if (repairable != null && repairable.Durability < repairable.MaxDurability) {
+                  float oldDurability = repairable.Durability;
+                  float newDurability = Mathf.Min(repairable.Durability + RepairAmount.Value, repairable.MaxDurability);
+                  repairable.Durability = newDurability;
+                  Logger.LogInfo($"[EAR] Repaired item {item.Id} from {oldDurability} to {newDurability}");
+                  repairedAnything = true;
+               }
             }
          }
 
-         if(repairedAnything) {
+         if (repairedAnything) {
             Logger.LogInfo("[EAR] Repair cycle complete.");
          }
       }

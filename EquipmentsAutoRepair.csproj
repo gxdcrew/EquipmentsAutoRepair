@@ -51,15 +51,19 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\Games\EscapeFromTarkov\EscapeFromTarkov_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
       <HintPath>..\..\Games\EscapeFromTarkov\BepInEx\core\BepInEx.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Comfort">
       <HintPath>..\..\Games\EscapeFromTarkov\EscapeFromTarkov_Data\Managed\Comfort.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ItemComponent.Types">
       <HintPath>..\..\Games\EscapeFromTarkov\EscapeFromTarkov_Data\Managed\ItemComponent.Types.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -71,9 +75,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>..\..\Games\EscapeFromTarkov\EscapeFromTarkov_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\..\Games\EscapeFromTarkov\EscapeFromTarkov_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
